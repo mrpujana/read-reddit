@@ -1,9 +1,15 @@
 from dotenv import dotenv_values
 from read_reddit import RedditAnalyzer
 import streamlit as st
-
+from google_ai import CommentAnalyser
 
 config = dotenv_values(".env")
+
+############################################################
+############################################################
+########################## Reddit ##########################
+############################################################
+############################################################
 
 # initialise the object
 reddit_analyzer = RedditAnalyzer(config)
@@ -48,3 +54,39 @@ for viewpoint, summary_data in summaries.items():
     st.write(f"Sentiment (TextBlob): {summary_data['sentiment_1']}")
     st.write(f"Number of comments: {summary_data['comments']}")
     st.write(f"Summary: {summary_data['summary']}")
+
+
+
+############################################################
+############################################################
+####################### Google GenAI #######################
+############################################################
+############################################################
+
+def google_ai_handler(comments):
+    processor = CommentAnalyser(api_key=config['GOOGLE_API_KEY'])
+    st.write("# Original Comments")
+    st.write(comments)
+    
+    
+    comment_sentiments={}
+    for c in comments:
+        ai_sentiment = processor.analyze_sentiments(c)
+        comment_sentiments[c] = ai_sentiment
+    st.write("## Sentiment of Each Comments - LLM")
+    st.write(comment_sentiments)
+
+    
+    summary = processor.generate_summary(comments)
+    st.write("# Summary of all the comments received")
+    st.write(summary)
+
+    viewpoints = processor.analyze_viewpoints(comments)
+    st.write("# Viewpoint Similarity Analysis")
+    st.write(viewpoints)
+
+    sentiments = processor.analyze_sentiments(comments)
+    st.write("# Sentiment Analysis on comments")
+    st.write(sentiments)
+
+google_ai_handler(comments)
